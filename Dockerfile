@@ -25,27 +25,9 @@ RUN groupadd --gid $GID $USERNAME \
         # Required for Nushell and other Rust-based tools
         rustc \
         cargo \
+        unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-# RUN     groupadd --gid $GID $USERNAME
-# RUN     useradd --uid $UID --gid $GID -m $USERNAME
-# RUN     apt-get update && apt-get install -y \
-#         git \
-#         curl \
-#         wget \
-#         build-essential \
-#         libssl-dev \
-#         pkg-config \
-#         ca-certificates \
-#         # General utilities you might need for debugging/testing
-#         sudo \
-#         iputils-ping \
-#         net-tools \
-#         # Required for Nushell and other Rust-based tools
-#         rustc \
-#         cargo
-# RUN    apt-get clean
-# RUN    rm -rf /var/lib/apt/lists/*
 
 # Switch to the new user
 USER $USERNAME
@@ -57,12 +39,13 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --pr
     && echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> $HOME/.profile \
     && echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> $HOME/.bashrc \
     && /bin/bash -c "source $HOME/.cargo/env && cargo install nu_plugin_query" \
-    && /bin/bash -c "source $HOME/.cargo/env && cargo install nu --features=extra"
+    && /bin/bash -c "source $HOME/.cargo/env && cargo install nu"
 
 # Install Zellij (assuming a recent static binary is available)
 # Check Zellij releases for the latest version
 # Check https://github.com/zellij-org/zellij/releases
 ENV ZELLIJ_VERSION="0.42.2"
+USER root
 RUN curl -LO "https://github.com/zellij-org/zellij/releases/download/v${ZELLIJ_VERSION}/zellij-x86_64-unknown-linux-musl.tar.gz" \
     && tar -xzf zellij-x86_64-unknown-linux-musl.tar.gz \
     && mv zellij /usr/local/bin/zellij \
@@ -81,11 +64,11 @@ RUN curl -LO "https://github.com/helix-editor/helix/releases/download/${HELIX_VE
 # Check Yazi releases for the latest version
 # Check https://github.com/sxycode/yazi/releases
 ENV YAZI_VERSION="25.5.31"
-RUN curl -LO "https://github.com/sxycode/yazi/releases/download/v${YAZI_VERSION}/yazi-x86_64-unknown-linux-musl.tar.gz" \
-    && tar -xzf yazi-x86_64-unknown-linux-musl.tar.gz \
+RUN curl -LO "https://github.com/sxyazi/yazi/releases/download/v${YAZI_VERSION}/yazi-x86_64-unknown-linux-musl.zip" \
+    && unzip yazi-x86_64-unknown-linux-musl.zip \
     && mv yazi-x86_64-unknown-linux-musl/yazi /usr/local/bin/yazi \
-    && mv yazi-x86_64-unknown-linux-musl/yazi.vim /usr/local/bin/yazi.vim \
-    && rm -rf yazi-x86_64-unknown-linux-musl.tar.gz yazi-x86_64-unknown-linux-musl/
+    && rm -rf yazi-x86_64-unknown-linux-musl.zip yazi-x86_64-unknown-linux-musl/
+USER $USERNAME
 
 # Clone Yazelix configuration
 RUN git clone https://github.com/luccahuguet/yazelix.git /home/$USERNAME/.config/yazelix \
