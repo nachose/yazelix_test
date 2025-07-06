@@ -1,6 +1,6 @@
 # Containerfile
 # Or your preferred Linux distribution (e.g., fedora:39, debian:stable)
-FROM ubuntu:24.04
+FROM ubuntu:24.10
 LABEL description="Yazelix testing environment with common dependencies"
 
 # Set a non-root user (optional but good practice for interactive containers)
@@ -68,6 +68,12 @@ RUN curl -LO "https://github.com/sxyazi/yazi/releases/download/v${YAZI_VERSION}/
     && unzip yazi-x86_64-unknown-linux-musl.zip \
     && mv yazi-x86_64-unknown-linux-musl/yazi /usr/local/bin/yazi \
     && rm -rf yazi-x86_64-unknown-linux-musl.zip yazi-x86_64-unknown-linux-musl/
+
+# Download gostty
+RUN wget https://github.com/mkasberg/ghostty-ubuntu/releases/download/1.1.3-0-ppa2/ghostty_1.1.3-0.ppa2_amd64_25.04.deb \
+   && sudo apt install -y gdebi-core \
+   && sudo gdebi ./ghostty_*.deb
+
 USER $USERNAME
 
 # Clone Yazelix configuration
@@ -76,9 +82,7 @@ RUN git clone https://github.com/luccahuguet/yazelix.git /home/$USERNAME/.config
     && ln -s /home/$USERNAME/.config/yazelix/yazi /home/$USERNAME/.config/yazi \
     && ln -s /home/$USERNAME/.config/yazelix/helix /home/$USERNAME/.config/helix \
     && mkdir -p /home/$USERNAME/.config/nushell \
-    && cp /home/$USERNAME/.config/yazelix/config.nu /home/$USERNAME/.config/nushell/config.nu \
-    && cp /home/$USERNAME/.config/yazelix/env.nu /home/$USERNAME/.config/nushell/env.nu \
-    && cp /home/$USERNAME/.config/yazelix/yazelix-plugin.nu /home/$USERNAME/.config/nushell/yazelix-plugin.nu
-
+    && mkdir -p /home/$USERNAME/.config/ghostty \
+    && cp ~/.config/yazelix/terminal_configs/ghostty/config ~/.config/ghostty/config
 # Set default command to run Nushell
 CMD ["nu"]
